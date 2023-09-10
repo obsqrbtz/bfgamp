@@ -3,12 +3,13 @@
 #include <iostream>
 #include <cstdlib>
 #include "effects.h"
-#include "bass.h"
-#include "bassasio.h"
+#include "../lib/bass/bass.h"
 
+#ifdef _WIN32
+#include "bassasio.h"
 #pragma comment(lib, "bass.lib") 
 #pragma comment(lib, "bassasio.lib")
-
+#endif
 
 static DWORD CALLBACK ApplyFx(BOOL input, DWORD channel, void* buffer, DWORD length, void* user)
 {
@@ -21,8 +22,8 @@ static DWORD CALLBACK ApplyFx(BOOL input, DWORD channel, void* buffer, DWORD len
 	}
 	return c;
 }
-
-static void StartAmp() {
+#ifdef _WIN32
+static void StartAmpASIO() {
 	std::cout << "ASIO Devices info:" << std::endl;
 	DWORD a = 0; int count = 0;
 	BASS_ASIO_DEVICEINFO asio_info;
@@ -66,3 +67,4 @@ static void StartAmp() {
 	BASS_Stop();
 	BASS_Free();
 }
+#endif
