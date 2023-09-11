@@ -22,6 +22,15 @@ static DWORD CALLBACK ApplyFx(BOOL input, DWORD channel, void* buffer, DWORD len
 	}
 	return c;
 }
+
+BOOL CALLBACK RecordingCallback(HRECORD handle, const void *buffer, DWORD length, void *user){
+	short gain = 200;
+	short* s = (short*)buffer;
+	for (int i = 0; i < length; i++) {
+		s[i] = TanhDist(s[i], gain);
+	}
+	return TRUE;
+}
 #ifdef _WIN32
 static void StartAmpASIO() {
 	std::cout << "ASIO Devices info:" << std::endl;
@@ -64,6 +73,44 @@ static void StartAmpASIO() {
 
 	BASS_ASIO_Stop();
 	BASS_ASIO_Free();
+	BASS_Stop();
+	BASS_Free();
+}
+/* Linux part does not work at all, keeping it here just to check meson and do not forget the macros */
+#elif __linux__ 
+static void StartAmpLinux() {
+	std::cout << "Devices info:" << std::endl;
+	DWORD a = 0; int count = 0;
+	BASS_DEVICEINFO info;
+	printf("Devices:\n");
+	for (a = 0; BASS_GetDeviceInfo(a, &info); a++)
+	{
+		if (info.flags & BASS_DEVICE_ENABLED)
+		{
+			printf("%d", count);
+			printf(" - ");
+			printf(info.name);
+			printf("\n");
+        	count++;
+		}
+	}
+
+	int device = 1;
+	//std::cin >> device;
+
+	try {
+		if (!BASS_Init(device, 44100, 0, 0, NULL))
+			throw BASS_ErrorGetCode();
+	}
+	catch (int err) {
+		std::cout << "Err no - " << err << std::endl;
+	}
+
+	BASS_RecordInit(device);
+	HRECORD rec = BASS_RecordStart(44100, 1, 0, RecordingCallback, 0);
+
+	char c = getchar();
+
 	BASS_Stop();
 	BASS_Free();
 }
