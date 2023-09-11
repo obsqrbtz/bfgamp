@@ -4,16 +4,19 @@ cc = meson.get_compiler('cpp')
 
 if host_machine.system() == 'linux'
     if host_machine.cpu_family () == 'x86_64'
-      dep = declare_dependency(
+      bass = declare_dependency(
         dependencies : cc.find_library('bass', dirs : [join_paths(meson.current_source_dir(), 'lib', 'bass', 'linux')]),
         include_directories : include_directories('lib/bass'))
+    exe = executable('bfg', ['amp.cpp'], dependencies : [bass])
       endif
-elif host_machine.system() == 'windows'
+elif host_machine.system() == 'windows' 
     if host_machine.cpu_family () == 'x86_64'
-      dep = declare_dependency(
+      bass = declare_dependency(
         dependencies : cc.find_library('bass', dirs : [join_paths(meson.current_source_dir(), 'lib', 'bass', 'win64')]),
         include_directories : include_directories('lib/bass'))
+      bassasio = declare_dependency(
+        dependencies : cc.find_library('bassasio', dirs : [join_paths(meson.current_source_dir(), 'lib', 'bass', 'win64')]),
+        include_directories : include_directories('lib/bass'))
+      exe = executable('bfg', ['amp.cpp'], dependencies : [bass, bassasio])
       endif
 endif
-
-exe = executable('bfg', ['amp.cpp'], dependencies : [dep])
