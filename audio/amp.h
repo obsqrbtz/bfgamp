@@ -6,9 +6,9 @@
 #include "../lib/bass/bass.h"
 
 #ifdef _WIN32
-#include "bassasio.h"
-#pragma comment(lib, "bass.lib") 
-#pragma comment(lib, "bassasio.lib")
+#include "../lib/bass/bassasio.h"
+#pragma comment(lib, "../lib/bass/win64/bass.lib") 
+#pragma comment(lib, "../lib/bass/win64/bassasio.lib")
 #endif
 
 static DWORD CALLBACK ApplyFx(BOOL input, DWORD channel, void* buffer, DWORD length, void* user)

@@ -10,6 +10,7 @@ static short NoiseGate(short sample)
 		sample *= 2.25;
 		if (sample > 32768)		sample = 32768;
 		if (sample < -32768)	sample = -32768;
+
 	}
 	else sample = 0;
 	return sample;
