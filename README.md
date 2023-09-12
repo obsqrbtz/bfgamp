@@ -8,6 +8,8 @@ Guitar amp based on BASS/C++
 ## Build
 
 ### Windows
+
+#### Clang
 **Initial setup**
 
 - Install LLVM and add directory, containing `clang-cl.exe` to `Path` if it was not done during install *(C:\Program Files\LLVM\bin)*.
@@ -17,6 +19,18 @@ Guitar amp based on BASS/C++
 ```
 meson build
 ninja -C build
+```
+
+#### MSVC
+```
+meson build
+meson compile -C build
+```
+
+#### Visual Studio
+To generate Visual Studio solution:
+```
+meson build -Dbackend=vs2019
 ```
 
 > [!NOTE]
