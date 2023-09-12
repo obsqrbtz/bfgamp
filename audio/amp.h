@@ -23,14 +23,6 @@ static DWORD CALLBACK ApplyFx(BOOL input, DWORD channel, void* buffer, DWORD len
 	return c;
 }
 
-BOOL CALLBACK RecordingCallback(HRECORD handle, const void *buffer, DWORD length, void *user){
-	short gain = 200;
-	short* s = (short*)buffer;
-	for (int i = 0; i < length; i++) {
-		s[i] = TanhDist(s[i], gain);
-	}
-	return TRUE;
-}
 #ifdef _WIN32
 static void StartAmpASIO() {
 	std::cout << "ASIO Devices info:" << std::endl;
@@ -78,6 +70,41 @@ static void StartAmpASIO() {
 }
 /* Linux part does not work at all, keeping it here just to check meson and do not forget the macros */
 #elif __linux__ 
+
+BASS_INFO info;
+HRECORD rchan;		// recording channel
+HSTREAM chan;		// playback stream
+int device = 1;
+int rec_device = 0;
+int input = 0;			// current input source
+float volume = 1.0;	// volume level
+
+#define DEFAULTRATE 44100
+#define BUFF_SIZE 256
+
+void Error(const char *es)
+{
+	char mes[200];
+	printf(mes, "%s\n(error code: %d)", es, BASS_ErrorGetCode());
+}
+
+// STREAMPROC that pulls data from the recording
+DWORD CALLBACK StreamProc(HSTREAM handle, void *buffer, DWORD length, void *user)
+{
+	DWORD c = BASS_ChannelGetData(rchan, buffer, length);
+	return c;
+}
+
+BOOL CALLBACK RecordingCallback(HRECORD handle, const void *buffer, DWORD length, void *user)
+{
+	short gain = 1000;
+	short* s = (short*)buffer;
+	for (int i = 0; i < BUFF_SIZE; i++) {
+		s[i] = TanhDist(s[i], gain);
+	}
+	return TRUE; // continue recording
+}
+
 static void StartAmpLinux() {
 	std::cout << "Devices info:" << std::endl;
 	DWORD a = 0; int count = 0;
@@ -94,22 +121,42 @@ static void StartAmpLinux() {
         	count++;
 		}
 	}
+	BASS_Init(device, DEFAULTRATE, 0, 0, NULL);
 
-	int device = 1;
-	//std::cin >> device;
-
-	try {
-		if (!BASS_Init(device, 44100, 0, 0, NULL))
-			throw BASS_ErrorGetCode();
+	int c;
+	BASS_DEVICEINFO di;
+	printf("Rec devices:\n");
+	for (c = 0; BASS_RecordGetDeviceInfo(c, &di); c++) {
+		printf("%d", c);
+		printf(" - ");
+		printf(di.name);
+		printf("\n");
 	}
-	catch (int err) {
-		std::cout << "Err no - " << err << std::endl;
+
+	const char *name;
+	printf("In:\n");
+	for (c = 0; name = BASS_RecordGetInputName(c); c++) {
+		printf("%d", c);
+		printf(" - ");
+		printf(name);
+		printf("\n");
 	}
+	BASS_RecordSetInput(input, BASS_INPUT_ON, -1);
+	BASS_RecordInit(rec_device);
+	BASS_SetConfig(BASS_CONFIG_DEV_NONSTOP, 1);
 
-	BASS_RecordInit(device);
-	HRECORD rec = BASS_RecordStart(44100, 1, 0, RecordingCallback, 0);
+	chan = BASS_StreamCreate(DEFAULTRATE, 2, BASS_SAMPLE_FLOAT, StreamProc, 0);
+	BASS_ChannelSetAttribute(chan, BASS_ATTRIB_BUFFER, 0); // disable playback buffering
+	BASS_ChannelSetAttribute(chan, BASS_ATTRIB_VOL, volume); // set volume level
 
-	char c = getchar();
+	BASS_SetConfig(BASS_CONFIG_REC_BUFFER, BUFF_SIZE); // don't need/want a big recording buffer
+
+	// record without a RECORDPROC so output stream can pull data from it
+	rchan = BASS_RecordStart(DEFAULTRATE, 2, BASS_SAMPLE_FLOAT, NULL, 0);
+
+	BASS_ChannelPlay(chan, FALSE); // start the output
+
+	char g = getchar();
 
 	BASS_Stop();
 	BASS_Free();
