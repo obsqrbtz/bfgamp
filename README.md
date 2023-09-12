@@ -31,9 +31,9 @@ meson compile -C build
 ```
 
 #### Visual Studio
-To generate Visual Studio solution:
+Generate Visual Studio solution:
 ```
-meson build -Dbackend=vs2019
+meson setup build_vs --backend vs
 ```
 
 ### Linux
