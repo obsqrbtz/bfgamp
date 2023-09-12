@@ -10,8 +10,8 @@ Guitar amp based on BASS/C++
 ### Windows
 **Initial setup**
 
-Install LLVM and add directory, containing `clang-cl.exe` to `Path` if it was not done during install *(C:\Program Files\LLVM\bin)*
-Set `CXX` environment variable to `clang-cl`.
+- Install LLVM and add directory, containing `clang-cl.exe` to `Path` if it was not done during install *(C:\Program Files\LLVM\bin)*.
+- Set `CXX` environment variable to `clang-cl`.
 
 **Build**
 ```
