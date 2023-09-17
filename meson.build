@@ -1,5 +1,4 @@
-project('bfgamp', 'cpp', version : '1.0.0', license : 'MIT',
-        default_options : ['c_std=c11', 'cpp_std=c++11'])
+project('bfgamp', 'cpp', version : '1.0.0', license : 'MIT')
 
 cc = meson.get_compiler('cpp')
 
