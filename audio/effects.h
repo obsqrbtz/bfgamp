@@ -8,8 +8,8 @@ static short NoiseGate(short sample)
 	if (sample > s_threshold || sample < -s_threshold)
 	{
 		sample *= 2.25;
-		if (sample > 32768)		sample = 32768;
-		if (sample < -32768)	sample = -32768;
+		if (sample > 32768) sample = 32768;
+		if (sample < -32768) sample = -32768;
 
 	}
 	else sample = 0;
