@@ -10,7 +10,7 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 {
   // Since the number of input and output channels is equal, we can do
   // a simple buffer copy operation here.
-  if ( status ) std::cout << "Stream over/underflow detected." << std::endl;
+  if (status) std::cout << "Stream over/underflow detected." << std::endl;
  
   unsigned int *bytes = (unsigned int *) data;
   int* frames = (int*) inputBuffer;
@@ -30,13 +30,21 @@ void StartAmp()
     std::cout << "\nNo audio devices found!\n";
     exit( 0 );
   }
- 
+  for(int i = 0; i < deviceIds.size(); i++){
+    std::cout << "[" << i << "] " << adac.getDeviceNames()[i] << " (ID " 
+    << deviceIds[i] << ")" << std::endl;
+  }
+  int iDevNum = 0, oDevNum = 0;
+  std::cout << "Choose input device: ";
+  std::cin >> iDevNum;
+  std::cout << "Choose output device: ";
+  std::cin >> oDevNum;
   // Set the same number of channels for both input and output.
   unsigned int bufferBytes, bufferFrames = 1;
   RtAudio::StreamParameters iParams, oParams;
-  iParams.deviceId = deviceIds[0]; // first available device
+  iParams.deviceId = deviceIds[iDevNum]; // first available device
   iParams.nChannels = 1;
-  oParams.deviceId = deviceIds[0]; // first available device
+  oParams.deviceId = deviceIds[oDevNum]; // first available device
   oParams.nChannels = 1;
  
   if ( adac.openStream( &oParams, &iParams, RTAUDIO_SINT32, 48000,
@@ -54,10 +62,10 @@ void StartAmp()
  
   char input;
   std::cout << "\nRunning ... press <enter> to quit.\n";
-  std::cin.get(input);
+  std::cin >> input;
  
   // Block released ... stop the stream
-  if ( adac.isStreamRunning() )
+  if (adac.isStreamRunning() )
     adac.stopStream();  // or could call adac.abortStream();
  
  cleanup:
